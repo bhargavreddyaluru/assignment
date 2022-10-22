@@ -1,10 +1,23 @@
 import {Component} from 'react'
 
 import Header from '../Header'
+import ReactTable from '../ReactTable'
+import Pagination from '../Pagination'
+import Button from '../Button'
+import PopUp from '../PopUp'
+
 import './index.css'
 
 class Resource extends Component {
-  state = {resourceData: {}, resourceItemsList: []}
+  state = {
+    resourceData: {},
+    resourceItemsList: [],
+    perPageList: [],
+    searchFilteredList: [],
+    checkedList: [],
+    sortedResults: [],
+    searchInput: '',
+  }
 
   componentDidMount() {
     this.getResourceDetails()
@@ -20,7 +33,6 @@ class Resource extends Component {
     }
     const response = await fetch(url, options)
     const data = await response.json()
-    console.log(data)
     if (response.ok) {
       const updatedData = {
         description: data.description,
@@ -30,27 +42,83 @@ class Resource extends Component {
         resourceItems: data.resource_items,
         title: data.title,
       }
+      const updatedResources = data.resource_items.map(item => ({
+        ...item,
+        description: item.description.slice(0, 100),
+      }))
+      console.log(updatedResources)
+
       this.setState({
         resourceData: updatedData,
-        resourceItemsList: data.resource_items,
+        resourceItemsList: updatedResources,
+        perPageList: updatedResources.slice(0, 6),
+        searchFilteredList: updatedResources,
+        sortedResults: updatedResources,
       })
     }
   }
 
-  renderSearchInput = () => (
-    <div className="resource-search-input-container">
-      <img
-        src="https://res.cloudinary.com/dqwufvygi/image/upload/v1666368809/Assignment/Icon-search-icon_hnpeap.svg"
-        alt="search icon"
-        className="resource-search-icon"
-      />
-      <input
-        type="search"
-        placeholder="Search"
-        className="resource-search-input"
-      />
-    </div>
-  )
+  onChangeSearchInput = event => {
+    this.setState({searchInput: event.target.value}, this.searchFiltering())
+  }
+
+  searchFiltering = () => {
+    const {resourceItemsList, searchInput} = this.state
+    const newFilteredList = resourceItemsList.filter(item =>
+      item.title.toLowerCase().includes(searchInput.toLowerCase()),
+    )
+    this.setState({
+      searchFilteredList: newFilteredList,
+      perPageList: newFilteredList.slice(0, 6),
+    })
+  }
+
+  onClickUpdate = async () => {
+    const url =
+      'https://media-content.ccbp.in/website/react-assignment/resource/update.json'
+    const options = {method: 'GET'}
+    const response = await fetch(url, options)
+    console.log(response.status)
+  }
+
+  onClickAddBtn = () => {
+    const {history} = this.props
+    history.push('/add-item')
+  }
+
+  itemUnchecked = () => {
+    this.setState(prevState => {
+      const {checkedList} = prevState
+      checkedList.pop()
+      return {checkedList: [...checkedList]}
+    })
+  }
+
+  itemChecked = item => {
+    this.setState(prevState => ({
+      checkedList: [...prevState.checkedList, item],
+    }))
+  }
+
+  renderSearchInput = () => {
+    const {searchInput} = this.state
+    return (
+      <div className="resource-search-input-container">
+        <img
+          src="https://res.cloudinary.com/dqwufvygi/image/upload/v1666368809/Assignment/Icon-search-icon_hnpeap.svg"
+          alt="search icon"
+          className="resource-search-icon"
+        />
+        <input
+          type="search"
+          placeholder="Search"
+          className="resource-search-input"
+          value={searchInput}
+          onChange={this.onChangeSearchInput}
+        />
+      </div>
+    )
+  }
 
   renderSort = () => (
     <div className="sort-container">
@@ -59,12 +127,28 @@ class Resource extends Component {
         alt="sort icon"
         className="sort-icon"
       />
-      <p className="sort-heading">SORT</p>
+      <PopUp />
     </div>
   )
 
+  pageHandler = pageNumber => {
+    const {searchFilteredList} = this.state
+    this.setState({
+      perPageList: searchFilteredList.slice(
+        (pageNumber - 1) * 6,
+        pageNumber * 6,
+      ),
+    })
+  }
+
   renderResourceContent = () => {
-    const {resourceData} = this.state
+    const {
+      resourceData,
+      searchFilteredList,
+      perPageList,
+      checkedList,
+    } = this.state
+
     const {iconUrl, title, id, link, description} = resourceData
     return (
       <div className="resource-content-container">
@@ -100,7 +184,11 @@ class Resource extends Component {
               </div>
             </div>
             <p className="resource-page-description">{description}</p>
-            <button type="button" className="update-button">
+            <button
+              type="button"
+              className="update-button"
+              onClick={this.onClickUpdate}
+            >
               UPDATE
             </button>
           </div>
@@ -111,13 +199,29 @@ class Resource extends Component {
               {this.renderSort()}
             </div>
           </div>
+          <ReactTable
+            details={perPageList}
+            itemChecked={this.itemChecked}
+            itemUnchecked={this.itemUnchecked}
+          />
+          <div className="resource-footer-container">
+            <div className="buttons-container">
+              <button type="button" onClick={this.onClickAddBtn}>
+                ADD ITEM
+              </button>
+              <Button checkedList={checkedList}>DELETE</Button>
+            </div>
+            <Pagination
+              details={searchFilteredList}
+              pageHandler={this.pageHandler}
+            />
+          </div>
         </div>
       </div>
     )
   }
 
   render() {
-    const {resourceItemsList} = this.state
     return (
       <>
         <Header />

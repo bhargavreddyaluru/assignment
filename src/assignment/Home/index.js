@@ -27,7 +27,7 @@ const TabItem = props => {
 }
 
 class Home extends Component {
-  state = {resourcesList: [], activeTabId: 'resource'}
+  state = {resourcesList: [], activeTabId: 'resource', searchInput: ''}
 
   componentDidMount() {
     this.getResources()
@@ -59,6 +59,10 @@ class Home extends Component {
     this.setState({activeTabId: id})
   }
 
+  onChangeSearchInput = event => {
+    this.setState({searchInput: event.target.value})
+  }
+
   renderTabsList = () => {
     const {activeTabId} = this.state
     return (
@@ -75,22 +79,29 @@ class Home extends Component {
     )
   }
 
-  renderSearchInput = () => (
-    <div className="search-input-container">
-      <img
-        src="https://res.cloudinary.com/dqwufvygi/image/upload/v1666368809/Assignment/Icon-search-icon_hnpeap.svg"
-        alt="search icon"
-        className="search-icon"
-      />
-      <input type="search" placeholder="Search" className="search-input" />
-    </div>
-  )
+  renderSearchInput = () => {
+    const {searchInput} = this.state
+    return (
+      <div className="search-input-container">
+        <img
+          src="https://res.cloudinary.com/dqwufvygi/image/upload/v1666368809/Assignment/Icon-search-icon_hnpeap.svg"
+          alt="search icon"
+          className="search-icon"
+        />
+        <input
+          type="search"
+          placeholder="Search"
+          className="search-input"
+          onChange={this.onChangeSearchInput}
+          value={searchInput}
+        />
+      </div>
+    )
+  }
 
   renderResourcesList = () => {
-    const {resourcesList, activeTabId} = this.state
-
+    const {resourcesList, activeTabId, searchInput} = this.state
     let filteredList = []
-
     switch (activeTabId) {
       case 'request':
         filteredList = resourcesList.filter(item => item.tag === 'request')
@@ -102,11 +113,15 @@ class Home extends Component {
         filteredList = resourcesList
     }
 
+    const searchFilteredList = filteredList.filter(item =>
+      item.title.toLowerCase().includes(searchInput.toLowerCase()),
+    )
+
     return (
       <div className="resources-container">
         {this.renderSearchInput()}
         <ul className="resources-list">
-          {filteredList.map(item => (
+          {searchFilteredList.map(item => (
             <ResourceCard details={item} key={item.id} />
           ))}
         </ul>

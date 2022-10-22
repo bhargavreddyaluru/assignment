@@ -1,0 +1,26 @@
+.button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 8px 20px 8px 20px;
+  height: 40px;
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 24px;
+  border-width: 0;
+  margin-right: 24px;
+  border-radius: 4px;
+  color: #ffffff;
+  cursor: pointer;
+}
+.active-button {
+  background-color: #2dca73;
+}
+.disabled-button {
+  background: #d7dfe9;
+}
+.delete-button {
+  background: #ff0b37;
+}

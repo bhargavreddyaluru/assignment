@@ -94,6 +94,7 @@
   align-items: center;
   justify-content: center;
   margin: 40px 0 0 0;
+  cursor: pointer;
 }
 .resource-search-sort-container {
   display: flex;
@@ -155,4 +156,14 @@
   text-transform: uppercase;
   color: #171f46;
   margin: 0;
+}
+.resource-footer-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+}
+.buttons-container {
+  display: flex;
+  align-items: center;
 }

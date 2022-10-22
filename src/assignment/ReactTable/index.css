@@ -1,0 +1,63 @@
+.checkbox {
+  height: 16px;
+  width: 16px;
+  background: rgba(215, 223, 233, 0.4);
+  border: 1px solid #d7dfe9;
+  border-radius: 2px;
+  cursor: pointer;
+  outline: none;
+  margin-left: 25px;
+}
+.link-text-styling {
+  color: #0b69ff;
+  text-decoration: none;
+}
+table:last-child {
+  border-bottom: 0;
+}
+
+.table {
+  border-spacing: 0;
+  border: 1px solid #d7dfe9;
+  border-radius: 7px 7px 0px 0px;
+  width: 100%;
+  color: #7e858e;
+}
+
+.row {
+  border-bottom: 1px solid #d7dfe9;
+  height: 64px;
+  text-align: left;
+}
+
+th:last-child {
+  padding-left: 48px;
+}
+.table-headers {
+  border-bottom: 1px solid #d7dfe9;
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: #7e858e;
+  padding-left: 10px;
+}
+td:last-child {
+  border-right: 0;
+  padding-left: 48px;
+}
+.data-cell {
+  padding: 5px 5px 5px 10px;
+  border: none;
+  border-bottom: 1px solid #d7dfe9;
+  max-width: 180px;
+  margin-right: 25px;
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 24px;
+}
