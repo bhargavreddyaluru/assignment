@@ -3,10 +3,16 @@ import {Component} from 'react'
 import Header from '../Header'
 import ReactTable from '../ReactTable'
 import Pagination from '../Pagination'
-import Button from '../Button'
 import PopUp from '../PopUp'
-
+import LoadingView from '../LoadingView'
+import SomethingWentWrong from '../SomethingWentWrong'
 import './index.css'
+
+const loadingStatus = {
+  loading: 'LOADING',
+  success: 'SUCCESS',
+  failure: 'FAILURE',
+}
 
 class Resource extends Component {
   state = {
@@ -17,6 +23,7 @@ class Resource extends Component {
     checkedList: [],
     sortedResults: [],
     searchInput: '',
+    isLoading: loadingStatus.loading,
   }
 
   componentDidMount() {
@@ -46,7 +53,6 @@ class Resource extends Component {
         ...item,
         description: item.description.slice(0, 100),
       }))
-      console.log(updatedResources)
 
       this.setState({
         resourceData: updatedData,
@@ -54,23 +60,88 @@ class Resource extends Component {
         perPageList: updatedResources.slice(0, 6),
         searchFilteredList: updatedResources,
         sortedResults: updatedResources,
+        isLoading: loadingStatus.success,
       })
+    } else if (response.status === 400) {
+      this.setState({isLoading: loadingStatus.failure})
     }
   }
 
   onChangeSearchInput = event => {
-    this.setState({searchInput: event.target.value}, this.searchFiltering())
+    this.setState(
+      {searchInput: event.target.value},
+      this.searchFiltering(event),
+    )
   }
 
-  searchFiltering = () => {
-    const {resourceItemsList, searchInput} = this.state
-    const newFilteredList = resourceItemsList.filter(item =>
-      item.title.toLowerCase().includes(searchInput.toLowerCase()),
+  searchFiltering = event => {
+    const {sortedResults} = this.state
+    const newFilteredList = sortedResults.filter(item =>
+      item.title.toLowerCase().includes(event.target.value.toLowerCase()),
     )
     this.setState({
       searchFilteredList: newFilteredList,
       perPageList: newFilteredList.slice(0, 6),
     })
+  }
+
+  sortFunctionality = type => {
+    const {resourceItemsList} = this.state
+    switch (type) {
+      case 'ascending':
+        resourceItemsList.sort((a, b) => {
+          const textA = a.title.toUpperCase()
+          const textB = b.title.toUpperCase()
+          if (textA < textB) {
+            return -1
+          }
+          if (textA > textB) {
+            return 1
+          }
+          return 0
+        })
+        this.setState({
+          sortedResults: resourceItemsList,
+          perPageList: resourceItemsList.slice(0, 6),
+        })
+        break
+      case 'descending':
+        resourceItemsList.sort((a, b) => {
+          const textA = a.title.toUpperCase()
+          const textB = b.title.toUpperCase()
+          if (textA < textB) {
+            return 1
+          }
+          if (textA > textB) {
+            return -1
+          }
+          return 0
+        })
+        this.setState({
+          sortedResults: resourceItemsList,
+          perPageList: resourceItemsList.slice(0, 6),
+        })
+        break
+      case 'recentlyAdded':
+        resourceItemsList.sort((a, b) => {
+          const dateA = new Date(a.createdAt)
+          const dateB = new Date(b.createdAt)
+          if (dateA > dateB) {
+            return 1
+          }
+          if (dateA < dateB) {
+            return -1
+          }
+          return 0
+        })
+        this.setState({
+          sortedResults: resourceItemsList,
+          perPageList: resourceItemsList.slice(0, 6),
+        })
+        break
+      default:
+        this.setState({sortedResults: resourceItemsList})
+    }
   }
 
   onClickUpdate = async () => {
@@ -127,17 +198,14 @@ class Resource extends Component {
         alt="sort icon"
         className="sort-icon"
       />
-      <PopUp />
+      <PopUp sortFunctionality={this.sortFunctionality} />
     </div>
   )
 
   pageHandler = pageNumber => {
-    const {searchFilteredList} = this.state
+    const {sortedResults} = this.state
     this.setState({
-      perPageList: searchFilteredList.slice(
-        (pageNumber - 1) * 6,
-        pageNumber * 6,
-      ),
+      perPageList: sortedResults.slice((pageNumber - 1) * 6, pageNumber * 6),
     })
   }
 
@@ -148,6 +216,10 @@ class Resource extends Component {
       perPageList,
       checkedList,
     } = this.state
+
+    const len = checkedList.length
+    const addBtnStyling = len === 0 ? 'active-button' : null
+    const deleteBtnStyling = len === 0 ? null : 'delete-button'
 
     const {iconUrl, title, id, link, description} = resourceData
     return (
@@ -206,10 +278,16 @@ class Resource extends Component {
           />
           <div className="resource-footer-container">
             <div className="buttons-container">
-              <button type="button" onClick={this.onClickAddBtn}>
+              <button
+                type="button"
+                onClick={this.onClickAddBtn}
+                className={`button ${addBtnStyling}`}
+              >
                 ADD ITEM
               </button>
-              <Button checkedList={checkedList}>DELETE</Button>
+              <button type="button" className={`button ${deleteBtnStyling}`}>
+                DELETE
+              </button>
             </div>
             <Pagination
               details={searchFilteredList}
@@ -221,11 +299,23 @@ class Resource extends Component {
     )
   }
 
+  loadingBasedRender = () => {
+    const {isLoading} = this.state
+    switch (isLoading) {
+      case loadingStatus.loading:
+        return <LoadingView />
+      case loadingStatus.success:
+        return this.renderResourceContent()
+      default:
+        return <SomethingWentWrong />
+    }
+  }
+
   render() {
     return (
       <>
         <Header />
-        {this.renderResourceContent()}
+        {this.loadingBasedRender()}
       </>
     )
   }

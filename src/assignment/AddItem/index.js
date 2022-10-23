@@ -1,24 +1,76 @@
 import {Component} from 'react'
+import {v4 as uuidv4} from 'uuid'
 import Header from '../Header'
+
 import './index.css'
 
+const initialState = {
+  itemName: '',
+  linkText: '',
+  resourceName: '',
+  description: '',
+  fieldsError: '',
+  APIStatus: 'Loading...',
+}
+
 class AddItem extends Component {
-  state = {
-    itemName: '',
-    linkText: '',
-    resourceName: '',
-    description: '',
-    itemNameError: '',
+  state = {...initialState, itemAdded: false}
+
+  onChangeItemName = event => {
+    this.setState({itemName: event.target.value})
   }
 
-  onSubmitForm = event => {
+  onChangeLinkText = event => {
+    this.setState({linkText: event.target.value})
+  }
+
+  onChangeResourceName = event => {
+    this.setState({resourceName: event.target.value})
+  }
+
+  onChangeDescription = event => {
+    this.setState({description: event.target.value})
+  }
+
+  onClickAddMore = () => {
+    this.setState({itemAdded: false})
+  }
+
+  onSubmitForm = async event => {
+    const {itemName, linkText, resourceName, description} = this.state
+    const createdAt = new Date()
     event.preventDefault()
-  }
+    if (
+      itemName !== '' &&
+      linkText !== '' &&
+      resourceName !== '' &&
+      description !== ''
+    ) {
+      const newItem = {
+        id: uuidv4(),
+        createdAt,
+        title: itemName,
+        link: linkText,
+        resource: resourceName,
+      }
+      const url =
+        'https://media-content.ccbp.in/website/react-assignment/add_resource.json'
 
-  onBlurItemName = event => {
-    if (event.target.value === '') {
-      console.log('error')
-      this.setState({itemNameError: '*Please Enter Item Name'})
+      const response = await fetch(url)
+      if (response.status === 200) {
+        this.setState({
+          ...initialState,
+          APIStatus: 'Item Added Successfully.',
+          itemAdded: true,
+        })
+      } else if (response.status === 400) {
+        this.setState({
+          fieldsError: '*Client Side Error',
+          APIStatus: 'Client Side Error',
+        })
+      }
+    } else {
+      this.setState({fieldsError: '*All fields are mandatory '})
     }
   }
 
@@ -33,9 +85,9 @@ class AddItem extends Component {
           type="text"
           placeholder="Enter Item Name"
           id="ItemName"
-          className="input-field"
+          className="add-item-input-field"
           value={itemName}
-          onBlur={this.onBlurItemName}
+          onChange={this.onChangeItemName}
         />
         {itemNameError && <p className="error-message">{itemNameError}</p>}
       </div>
@@ -53,8 +105,9 @@ class AddItem extends Component {
           type="text"
           placeholder="Enter The Link"
           id="LinkText"
-          className="input-field"
+          className="add-item-input-field"
           value={linkText}
+          onChange={this.onChangeLinkText}
         />
       </div>
     )
@@ -71,8 +124,9 @@ class AddItem extends Component {
           type="text"
           placeholder="Enter The Resource Name"
           id="ResourceName"
-          className="input-field"
+          className="add-item-input-field"
           value={resourceName}
+          onChange={this.onChangeResourceName}
         />
       </div>
     )
@@ -83,41 +137,60 @@ class AddItem extends Component {
     return (
       <div className="input-container">
         <label htmlFor="ItemName" className="label-text">
-          RESOURCE NAME
+          DESCRIPTION
         </label>
         <textarea
           type="text"
           placeholder="Enter The Description"
           className="description-field"
           value={description}
+          onChange={this.onChangeDescription}
         />
       </div>
     )
   }
 
+  renderSuccessView = () => (
+    <div className="success-container">
+      <p className="success-message">Item Added Successfully</p>
+      <button
+        type="button"
+        className="create-button"
+        onClick={this.onClickAddMore}
+      >
+        ADD MORE
+      </button>
+    </div>
+  )
+
   renderCreateButton = () => (
     <div className="create-btn-container">
+      {this.renderErrorMessage()}
       <button type="submit" className="create-button">
         CREATE
       </button>
     </div>
   )
 
-  renderForm = () => {
-    const letter = 'HI'
-    return (
-      <form className="form-container" onSubmit={this.onSubmitForm}>
-        <h1 className="form-heading">Item Details</h1>
-        {this.renderItemName()}
-        {this.renderLinkText()}
-        {this.renderResourceName()}
-        {this.renderDescription()}
-        {this.renderCreateButton()}
-      </form>
-    )
+  renderErrorMessage = () => {
+    const {fieldsError} = this.state
+    return <p className="error-message">{fieldsError}</p>
   }
 
+  renderForm = () => (
+    <form className="form-container" onSubmit={this.onSubmitForm}>
+      <h1 className="form-heading">Item Details</h1>
+      {this.renderItemName()}
+      {this.renderLinkText()}
+      {this.renderResourceName()}
+      {this.renderDescription()}
+      {this.renderCreateButton()}
+    </form>
+  )
+
   render() {
+    const {APIStatus, itemAdded} = this.state
+    console.log(APIStatus)
     return (
       <>
         <Header />
@@ -131,7 +204,8 @@ class AddItem extends Component {
               />
               <p className="back-to-users">Users</p>
             </div>
-            {this.renderForm()}
+
+            {itemAdded ? this.renderSuccessView() : this.renderForm()}
           </div>
           <img
             src="https://res.cloudinary.com/dqwufvygi/image/upload/v1666468682/Assignment/Group_3-create-item_xz9216.png"

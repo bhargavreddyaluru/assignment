@@ -1,0 +1,15 @@
+.failed-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+.failed-image {
+  width: 30%;
+}
+.failed-text {
+  font-size: 18px;
+  font-family: 'Roboto';
+  margin-top: 28px;
+}

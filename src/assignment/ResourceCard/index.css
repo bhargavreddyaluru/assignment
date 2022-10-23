@@ -9,6 +9,7 @@
   font-style: normal;
   text-decoration: none;
 }
+
 @media screen and (max-width: 992px) {
   .resource-list-item {
     width: 49%;

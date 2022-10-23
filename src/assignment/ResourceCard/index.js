@@ -6,7 +6,6 @@ class ResourceCard extends Component {
   render() {
     const {details} = this.props
     const {iconUrl, title, category, link, description, id} = details
-    console.log(details)
     return (
       <Link to={`/resource/${id}`} className="resource-list-item">
         <li>
@@ -14,7 +13,6 @@ class ResourceCard extends Component {
             <div className="icon-container">
               <img src={iconUrl} alt="icon" className="resource-icon" />
             </div>
-
             <div>
               <h1 className="resource-card-heading">{title}</h1>
               <p className="resource-card-category">{category}</p>

@@ -1,7 +1,16 @@
 import {Component} from 'react'
 import Header from '../Header'
 import ResourceCard from '../ResourceCard'
+import LoadingView from '../LoadingView'
+import SomethingWentWrong from '../SomethingWentWrong'
+import Pagination from '../Pagination'
 import './index.css'
+
+const loadingStatus = {
+  loading: 'LOADING',
+  success: 'SUCCESS',
+  failure: 'FAILURE',
+}
 
 const tabsList = [
   {id: 'resource', name: 'Resources'},
@@ -27,7 +36,13 @@ const TabItem = props => {
 }
 
 class Home extends Component {
-  state = {resourcesList: [], activeTabId: 'resource', searchInput: ''}
+  state = {
+    resourcesList: [],
+    activeTabId: 'resource',
+    searchInput: '',
+    isLoading: loadingStatus.loading,
+    pageNumber: 1,
+  }
 
   componentDidMount() {
     this.getResources()
@@ -51,8 +66,19 @@ class Home extends Component {
         tag: item.tag,
         iconUrl: item.icon_url,
       }))
-      this.setState({resourcesList: updatedData})
+      this.setState({
+        resourcesList: updatedData,
+        isLoading: loadingStatus.success,
+      })
+    } else if (response.status >= 400) {
+      this.setState({isLoading: loadingStatus.failure})
     }
+  }
+
+  pageHandler = pageNumber => {
+    this.setState({
+      pageNumber,
+    })
   }
 
   onClickTab = id => {
@@ -99,8 +125,14 @@ class Home extends Component {
     )
   }
 
+  renderPagination = details => (
+    <div className="pagination-container">
+      <Pagination pageHandler={this.pageHandler} details={details} />
+    </div>
+  )
+
   renderResourcesList = () => {
-    const {resourcesList, activeTabId, searchInput} = this.state
+    const {resourcesList, activeTabId, searchInput, pageNumber} = this.state
     let filteredList = []
     switch (activeTabId) {
       case 'request':
@@ -117,14 +149,20 @@ class Home extends Component {
       item.title.toLowerCase().includes(searchInput.toLowerCase()),
     )
 
+    const perPageList = searchFilteredList.slice(
+      (pageNumber - 1) * 6,
+      pageNumber * 6,
+    )
+
     return (
       <div className="resources-container">
         {this.renderSearchInput()}
         <ul className="resources-list">
-          {searchFilteredList.map(item => (
+          {perPageList.map(item => (
             <ResourceCard details={item} key={item.id} />
           ))}
         </ul>
+        {this.renderPagination(searchFilteredList)}
       </div>
     )
   }
@@ -136,11 +174,23 @@ class Home extends Component {
     </div>
   )
 
+  loadingBasedRender = () => {
+    const {isLoading} = this.state
+    switch (isLoading) {
+      case loadingStatus.loading:
+        return <LoadingView />
+      case loadingStatus.success:
+        return this.renderHomeContainer()
+      default:
+        return <SomethingWentWrong />
+    }
+  }
+
   render() {
     return (
       <>
         <Header />
-        {this.renderHomeContainer()}
+        {this.loadingBasedRender()}
       </>
     )
   }

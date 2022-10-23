@@ -10,8 +10,8 @@ const sortTypeList = [
   {id: 'descending', name: 'Descending'},
 ]
 
-const PopUp = () => {
-  const onClickSortItem = () => {}
+const PopUp = props => {
+  const {sortFunctionality} = props
 
   return (
     <div className="popup-container">
@@ -24,8 +24,14 @@ const PopUp = () => {
       >
         <ul className="popped-container">
           {sortTypeList.map(item => (
-            <li key={item.id} className="pop-up-item" onClick={onClickSortItem}>
-              {item.name}
+            <li key={item.id} className="pop-up-item">
+              <button
+                type="button"
+                className="sorting-button"
+                onClick={() => sortFunctionality(item.id)}
+              >
+                {item.name}
+              </button>
             </li>
           ))}
         </ul>
