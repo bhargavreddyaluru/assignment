@@ -2,14 +2,6 @@
 
 This portal consists of a list of resources. The admin should be able to see all the resources, see tag-wise resources, see specific resource details, and add or update that resource.
 
-### Refer to the image below:
-
-<br/>
-<div style="text-align: center;">
-    <img src="https://www.loom.com/share/5957287ad8ce46e0b6b9f3de9ec7db51" alt="authentication-functionality-desktop-output" style="max-width:90%;box-shadow:0 2.8px 2.2px rgba(0, 0, 0, 0.12)">
-</div>
-<br/>
-
 ### Routes
 
 <details>
